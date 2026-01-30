@@ -55,26 +55,29 @@
                 </span>
               </div>
               <div class="table-cell image">
+                <div v-if="!item.image_url" class="skeleton thumbnail-skeleton"></div>
                 <img 
-                  v-if="item.image_url" 
+                  v-else 
                   :src="item.image_url" 
                   :alt="item.title" 
                   class="thumbnail"
                   @error="handleImageError"
                 />
-                <div v-else class="thumbnail-placeholder">
-                  <span class="placeholder-icon">📰</span>
-                </div>
               </div>
               <div class="table-cell title">
-                <h3 class="title-text">{{ item.title }}</h3>
+                <div v-if="!item.title" class="skeleton title-skeleton"></div>
+                <h3 v-else class="title-text">{{ item.title }}</h3>
                 <div class="title-meta">
-                  <span class="created-at">{{ formatDate(item.created_at) }}</span>
-                  <span v-if="item.hot_index" class="hot-index">{{ item.hot_index }} 热搜指数</span>
+                  <div v-if="!item.created_at" class="skeleton meta-skeleton"></div>
+                  <span v-else class="created-at">{{ formatDate(item.created_at) }}</span>
+                  <div v-if="!item.hot_index" class="skeleton hot-index-skeleton"></div>
+                  <span v-else class="hot-index">{{ item.hot_index }} 热搜指数</span>
                 </div>
               </div>
               <div class="table-cell action">
+                <div v-if="!item.id" class="skeleton action-skeleton"></div>
                 <router-link 
+                  v-else
                   :to="{ name: 'Detail', params: { id: item.id } }" 
                   class="action-btn view-btn"
                 >
@@ -780,6 +783,54 @@ export default {
   height: 20px;
   width: 100%;
   margin-top: 1rem;
+}
+
+/* 骨架屏样式 */
+.skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite;
+  border-radius: 4px;
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* 不同元素的骨架样式 */
+.thumbnail-skeleton {
+  width: 60px;
+  height: 60px;
+  border-radius: 6px;
+}
+
+.title-skeleton {
+  width: 80%;
+  height: 16px;
+  margin-bottom: 8px;
+}
+
+.meta-skeleton {
+  width: 120px;
+  height: 12px;
+  margin-right: 1rem;
+}
+
+.hot-index-skeleton {
+  width: 100px;
+  height: 12px;
+  border-radius: 10px;
+}
+
+.action-skeleton {
+  width: 60px;
+  height: 28px;
+  border-radius: 4px;
 }
 
 /* 响应式设计 */
