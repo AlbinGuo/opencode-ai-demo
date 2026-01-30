@@ -425,6 +425,171 @@ async def gitee_callback(code: str = Query(...)):
         print(f"Gitee 登录错误: {e}")
         raise HTTPException(status_code=500, detail="Gitee 登录失败")
 
+# 城市代码映射
+CITY_CODE_MAP = {
+    "101200300": "西安",
+    "101010100": "北京",
+    "101020100": "上海",
+    "101280100": "广州",
+    "101280600": "深圳",
+    "101210100": "杭州",
+    "101230200": "成都",
+    "101200100": "武汉",
+    "101190400": "南京"
+}
+from jobs_spider import BossZhipinSpider, get_foreign_jobs_sample, get_jobs_from_db, crawl_and_save_jobs
+
+@app.get("/api/jobs")
+def get_jobs(
+    query: str = None,
+    city: str = None,
+    page: int = 1,
+    page_size: int = 10
+):
+    """
+    从数据库获取招聘列表
+    
+    Args:
+        query: 搜索关键词
+        city: 城市代码
+        page: 页码
+        page_size: 每页数量
+    """
+    try:
+        city_name = CITY_CODE_MAP.get(city, city)
+        result = get_jobs_from_db(
+            query=query,
+            city=city_name,
+            page=page,
+            page_size=page_size
+        )
+        return result
+    except Exception as e:
+        print(f"获取招聘信息错误: {e}")
+        return {"error": "获取招聘信息失败", "data": [], "total": 0}
+
+@app.get("/api/jobs/{job_id}")
+def get_job_detail(job_id: int):
+    """
+    获取单个职位详情
+    
+    Args:
+        job_id: 职位ID
+    """
+    from jobs_spider import JobsDB
+    db = JobsDB()
+    try:
+        job = db.get_job_by_id(job_id)
+        if not job:
+            raise HTTPException(status_code=404, detail="职位不存在")
+        return {"data": job}
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"获取职位详情错误: {e}")
+        raise HTTPException(status_code=500, detail="获取职位详情失败")
+
+@app.get("/api/jobs/foreign")
+def get_foreign_jobs(
+    query: str = "Python",
+    city: str = "101200300",
+    page: int = 1,
+    page_size: int = 10
+):
+    """
+    获取外企招聘信息（从数据库）
+    
+    Args:
+        query: 搜索关键词
+        city: 城市代码
+        page: 页码
+        page_size: 每页数量
+    """
+    try:
+        city_name = CITY_CODE_MAP.get(city, city)
+        result = get_jobs_from_db(
+            query=query,
+            city=city_name,
+            page=page,
+            page_size=page_size
+        )
+        return result
+    except Exception as e:
+        print(f"获取招聘信息错误: {e}")
+        return {"error": "获取招聘信息失败", "data": [], "total": 0}
+
+@app.post("/api/jobs/crawl")
+def crawl_jobs(
+    query: str = "Python",
+    city: str = "101200300",
+    max_pages: int = 3
+):
+    """
+    爬取并保存招聘信息到数据库
+    
+    Args:
+        query: 搜索关键词
+        city: 城市代码
+        max_pages: 最大爬取页数
+    """
+    try:
+        result = crawl_and_save_jobs(
+            query=query,
+            city=city,
+            max_pages=max_pages
+        )
+        return {
+            "message": "爬取完成",
+            "crawled": result["crawled"],
+            "saved": result["saved"],
+            "query": result["query"],
+            "city": result["city"]
+        }
+    except Exception as e:
+        print(f"爬取招聘信息错误: {e}")
+        return {"error": "爬取招聘信息失败"}
+
+@app.get("/api/jobs/stats")
+def get_jobs_stats():
+    """
+    获取招聘数据统计
+    """
+    from jobs_spider import JobsDB
+    db = JobsDB()
+    try:
+        total = db.get_jobs_count()
+        return {"total_jobs": total}
+    except Exception as e:
+        print(f"获取统计数据错误: {e}")
+        return {"error": "获取统计数据失败", "total_jobs": 0}
+
+@app.get("/api/jobs/sample")
+def get_jobs_sample():
+    """获取示例招聘数据（用于开发测试）"""
+    return {
+        "data": get_foreign_jobs_sample(),
+        "total": len(get_foreign_jobs_sample()),
+        "page": 1,
+        "page_size": 10
+    }
+
+@app.get("/api/jobs/cities")
+def get_job_cities():
+    """获取支持的城市列表"""
+    return {
+        "cities": [
+            {"code": "101200300", "name": "西安"},
+            {"code": "101010100", "name": "北京"},
+            {"code": "101020100", "name": "上海"},
+            {"code": "101280100", "name": "广州"},
+            {"code": "101280600", "name": "深圳"},
+            {"code": "101210100", "name": "杭州"},
+            {"code": "101230200", "name": "成都"},
+            {"code": "101200100", "name": "武汉"},
+            {"code": "101190400", "name": "南京"}
+        ]
+    }
+
 # 获取所有热搜数据（支持分页和分类）
 @app.get("/api/hot-search")
 def get_hot_search(page: int = 1, page_size: int = 20, category: str = None):

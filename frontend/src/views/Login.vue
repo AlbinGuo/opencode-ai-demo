@@ -1,7 +1,10 @@
 <template>
     <div class="login-container">
         <div class="login-box">
-            <h1>登录</h1>
+            <div class="page-header">
+                <h1>登录</h1>
+                <p>欢迎回来，请登录您的账号</p>
+            </div>
             <form @submit.prevent="handleLogin">
                 <div class="form-group">
                     <label for="username">用户名</label>
@@ -30,7 +33,7 @@
             </form>
             
             <div class="divider">
-                <span>或</span>
+                <span>其他登录方式</span>
             </div>
             
             <button class="gitee-btn" @click="handleGiteeLogin" :disabled="giteeLoading">
@@ -100,27 +103,39 @@ export default {
 </script>
 
 <style scoped>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
 .login-container {
     min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background-color: #f5f5f5;
+    background: #fff;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    padding: 60px 16px;
 }
 
 .login-box {
-    background: white;
-    padding: 40px;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    width: 100%;
     max-width: 400px;
+    margin: 0 auto;
 }
 
-h1 {
+.page-header {
     text-align: center;
-    margin-bottom: 30px;
+    margin-bottom: 40px;
+}
+
+.page-header h1 {
+    font-size: 24px;
+    font-weight: 600;
     color: #333;
+    margin-bottom: 8px;
+}
+
+.page-header p {
+    font-size: 14px;
+    color: #999;
 }
 
 .form-group {
@@ -132,40 +147,47 @@ label {
     margin-bottom: 8px;
     color: #666;
     font-size: 14px;
+    font-weight: 500;
 }
 
 input {
     width: 100%;
     padding: 12px;
-    border: 1px solid #ddd;
+    border: 1px solid #eee;
     border-radius: 4px;
     font-size: 16px;
+    color: #333;
+    background: #fff;
     transition: border-color 0.3s;
 }
 
 input:focus {
     outline: none;
-    border-color: #007bff;
+    border-color: #333;
+}
+
+input::placeholder {
+    color: #999;
 }
 
 button {
     width: 100%;
     padding: 12px;
-    background-color: #007bff;
-    color: white;
+    background: #333;
+    color: #fff;
     border: none;
     border-radius: 4px;
     font-size: 16px;
     cursor: pointer;
-    transition: background-color 0.3s;
+    transition: opacity 0.3s;
 }
 
 button:hover:not(:disabled) {
-    background-color: #0056b3;
+    opacity: 0.9;
 }
 
 button:disabled {
-    background-color: #ccc;
+    opacity: 0.6;
     cursor: not-allowed;
 }
 
@@ -174,30 +196,14 @@ button:disabled {
     font-size: 14px;
     margin-bottom: 15px;
     padding: 10px;
-    background-color: #f8d7da;
+    background: #f8d7da;
     border-radius: 4px;
-}
-
-.register-link {
-    text-align: center;
-    margin-top: 20px;
-    color: #666;
-    font-size: 14px;
-}
-
-.register-link a {
-    color: #007bff;
-    text-decoration: none;
-}
-
-.register-link a:hover {
-    text-decoration: underline;
 }
 
 .divider {
     display: flex;
     align-items: center;
-    margin: 20px 0;
+    margin: 24px 0;
     color: #999;
     font-size: 14px;
 }
@@ -207,7 +213,7 @@ button:disabled {
     content: '';
     flex: 1;
     height: 1px;
-    background-color: #eee;
+    background: #eee;
 }
 
 .divider span {
@@ -217,13 +223,13 @@ button:disabled {
 .gitee-btn {
     width: 100%;
     padding: 12px;
-    background-color: #c71d23;
-    color: white;
-    border: none;
+    background: #fff;
+    color: #333;
+    border: 1px solid #eee;
     border-radius: 4px;
     font-size: 16px;
     cursor: pointer;
-    transition: background-color 0.3s;
+    transition: all 0.3s;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -231,15 +237,39 @@ button:disabled {
 }
 
 .gitee-btn:hover:not(:disabled) {
-    background-color: #a01920;
+    background: #f5f5f5;
+    border-color: #ddd;
 }
 
 .gitee-btn:disabled {
-    background-color: #e07276;
+    opacity: 0.6;
     cursor: not-allowed;
 }
 
 .gitee-icon {
     flex-shrink: 0;
+}
+
+.register-link {
+    text-align: center;
+    margin-top: 30px;
+    font-size: 14px;
+    color: #666;
+}
+
+.register-link a {
+    color: #333;
+    font-weight: 500;
+    text-decoration: none;
+}
+
+.register-link a:hover {
+    text-decoration: underline;
+}
+
+@media (max-width: 480px) {
+    .login-container {
+        padding: 40px 16px;
+    }
 }
 </style>

@@ -5,6 +5,7 @@
         <router-link to="/" class="nav-brand">百度热搜</router-link>
         <div class="nav-links">
           <template v-if="isLoggedIn">
+            <router-link to="/jobs" class="nav-link">外企招聘</router-link>
             <div class="user-info">
               <img v-if="avatarUrl" :src="avatarUrl" alt="头像" class="user-avatar" />
               <div v-else class="user-avatar default-avatar">{{ username.charAt(0).toUpperCase() }}</div>

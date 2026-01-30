@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Home from '../views/Home.vue'
+import Jobs from '../views/Jobs.vue'
 import Login from '../views/Login.vue'
 import Register from '../views/Register.vue'
 import { isAuthenticated } from '../api/auth'
@@ -9,6 +10,12 @@ const routes = [
     path: '/',
     name: 'Home',
     component: Home
+  },
+  {
+    path: '/jobs',
+    name: 'Jobs',
+    component: Jobs,
+    meta: { requiresAuth: true }
   },
   {
     path: '/detail/:id',

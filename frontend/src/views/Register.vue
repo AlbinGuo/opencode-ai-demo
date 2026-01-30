@@ -1,7 +1,10 @@
 <template>
     <div class="register-container">
         <div class="register-box">
-            <h1>注册</h1>
+            <div class="page-header">
+                <h1>注册</h1>
+                <p>创建您的账号，开启热搜之旅</p>
+            </div>
             <form @submit.prevent="handleRegister">
                 <div class="form-group">
                     <label for="username">用户名</label>
@@ -103,31 +106,43 @@ export default {
 </script>
 
 <style scoped>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
 .register-container {
     min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background-color: #f5f5f5;
+    background: #fff;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    padding: 60px 16px;
 }
 
 .register-box {
-    background: white;
-    padding: 40px;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    width: 100%;
     max-width: 400px;
+    margin: 0 auto;
 }
 
-h1 {
+.page-header {
     text-align: center;
-    margin-bottom: 30px;
+    margin-bottom: 40px;
+}
+
+.page-header h1 {
+    font-size: 24px;
+    font-weight: 600;
     color: #333;
+    margin-bottom: 8px;
+}
+
+.page-header p {
+    font-size: 14px;
+    color: #999;
 }
 
 .form-group {
-    margin-bottom: 15px;
+    margin-bottom: 20px;
 }
 
 label {
@@ -135,41 +150,48 @@ label {
     margin-bottom: 8px;
     color: #666;
     font-size: 14px;
+    font-weight: 500;
 }
 
 input {
     width: 100%;
     padding: 12px;
-    border: 1px solid #ddd;
+    border: 1px solid #eee;
     border-radius: 4px;
     font-size: 16px;
+    color: #333;
+    background: #fff;
     transition: border-color 0.3s;
 }
 
 input:focus {
     outline: none;
-    border-color: #007bff;
+    border-color: #333;
+}
+
+input::placeholder {
+    color: #999;
 }
 
 button {
     width: 100%;
     padding: 12px;
-    background-color: #28a745;
-    color: white;
+    background: #333;
+    color: #fff;
     border: none;
     border-radius: 4px;
     font-size: 16px;
     cursor: pointer;
-    transition: background-color 0.3s;
+    transition: opacity 0.3s;
     margin-top: 10px;
 }
 
 button:hover:not(:disabled) {
-    background-color: #218838;
+    opacity: 0.9;
 }
 
 button:disabled {
-    background-color: #ccc;
+    opacity: 0.6;
     cursor: not-allowed;
 }
 
@@ -178,7 +200,7 @@ button:disabled {
     font-size: 14px;
     margin-bottom: 15px;
     padding: 10px;
-    background-color: #f8d7da;
+    background: #f8d7da;
     border-radius: 4px;
 }
 
@@ -187,23 +209,30 @@ button:disabled {
     font-size: 14px;
     margin-bottom: 15px;
     padding: 10px;
-    background-color: #d4edda;
+    background: #d4edda;
     border-radius: 4px;
 }
 
 .login-link {
     text-align: center;
-    margin-top: 20px;
-    color: #666;
+    margin-top: 30px;
     font-size: 14px;
+    color: #666;
 }
 
 .login-link a {
-    color: #007bff;
+    color: #333;
+    font-weight: 500;
     text-decoration: none;
 }
 
 .login-link a:hover {
     text-decoration: underline;
+}
+
+@media (max-width: 480px) {
+    .register-container {
+        padding: 40px 16px;
+    }
 }
 </style>

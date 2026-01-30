@@ -69,6 +69,12 @@
                 <span class="meta-hot">{{ item.hot_index }}</span>
               </div>
             </div>
+            <img 
+              v-if="item.image_url" 
+              :src="item.image_url" 
+              class="item-thumb" 
+              @error="handleImageError"
+            />
             <span class="item-arrow">›</span>
           </div>
         </div>
@@ -149,6 +155,9 @@ export default {
     },
     navigateToDetail(id) {
       this.$router.push({ name: 'Detail', params: { id } })
+    },
+    handleImageError(e) {
+      e.target.style.display = 'none'
     },
     getRankClass(rank) {
       if (rank === 1) return 'rank-1'
@@ -489,6 +498,14 @@ export default {
 .item-arrow {
   font-size: 18px;
   color: #ccc;
+  flex-shrink: 0;
+}
+
+.item-thumb {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 6px;
   flex-shrink: 0;
 }
 
