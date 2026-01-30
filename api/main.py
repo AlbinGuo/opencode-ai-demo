@@ -18,7 +18,7 @@ from gitee_config import (
 )
 import os
 
-FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3006")
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
 from baidu_hot_spider import get_baidu_hot_search as get_baidu_hot_search_live
 
 # 缓存实时热搜数据
