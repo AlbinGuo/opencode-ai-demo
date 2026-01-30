@@ -344,6 +344,14 @@ export default {
   display: flex;
   gap: 1.5rem;
   align-items: center;
+  overflow-x: auto;
+  padding: 0.5rem 0;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+}
+
+.menu-container::-webkit-scrollbar {
+  display: none; /* Chrome/Safari/Opera */
 }
 
 .category-btn {
@@ -834,9 +842,23 @@ export default {
 }
 
 /* 响应式设计 */
+/* 平板设备 */
 @media (max-width: 768px) {
   .container {
     padding: 0 0.75rem;
+  }
+  
+  .category-menu {
+    padding: 0.75rem 0;
+  }
+  
+  .menu-container {
+    gap: 1rem;
+  }
+  
+  .category-btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
   }
   
   .table-header,
@@ -860,16 +882,100 @@ export default {
   }
 }
 
+/* 大屏手机 */
 @media (max-width: 480px) {
+  .container {
+    padding: 0 0.625rem;
+  }
+  
+  .category-menu {
+    padding: 0.625rem 0;
+  }
+  
+  .menu-container {
+    gap: 0.875rem;
+  }
+  
+  .category-btn {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8125rem;
+    border-radius: 20px;
+  }
+  
   .table-header,
   .table-row {
     grid-template-columns: 40px 1fr;
     gap: 0.5rem;
+    padding: 0.5rem;
   }
   
   .table-header .action,
   .table-row .action {
     display: none;
+  }
+  
+  .rank-number {
+    width: 18px;
+    height: 18px;
+    font-size: 0.7rem;
+  }
+  
+  .title-text {
+    font-size: 0.8125rem;
+  }
+  
+  .title-meta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+  
+  .hot-index {
+    font-size: 0.7rem;
+    padding: 0.1rem 0.4rem;
+  }
+}
+
+/* 小屏手机 */
+@media (max-width: 360px) {
+  .category-btn {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.75rem;
+  }
+  
+  .table-row {
+    padding: 0.4rem;
+  }
+  
+  .title-text {
+    font-size: 0.75rem;
+  }
+  
+  .created-at {
+    font-size: 0.6875rem;
+  }
+  
+  .hot-index {
+    font-size: 0.65rem;
+  }
+}
+
+/* 横屏模式优化 */
+@media (orientation: landscape) and (max-height: 500px) {
+  .category-menu {
+    padding: 0.5rem 0;
+  }
+  
+  .table-row {
+    padding: 0.4rem;
+  }
+  
+  .title-text {
+    font-size: 0.75rem;
+  }
+  
+  .title-meta {
+    font-size: 0.6875rem;
   }
 }
 </style>
