@@ -16,6 +16,31 @@ from gitee_config import (
     GITEE_CLIENT_ID, GITEE_CLIENT_SECRET, GITEE_REDIRECT_URI,
     GITEE_AUTH_URL, GITEE_TOKEN_URL, GITEE_USER_API
 )
+import os
+
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3006")
+from baidu_hot_spider import get_baidu_hot_search as get_baidu_hot_search_live
+
+# 缓存实时热搜数据
+_cached_hot_search = []
+_cached_time = 0
+CACHE_DURATION = 300  # 5分钟缓存
+
+def get_cached_hot_search():
+    """获取缓存的实时热搜数据"""
+    global _cached_hot_search, _cached_time
+    import time
+    current_time = time.time()
+    
+    if not _cached_hot_search or (current_time - _cached_time) > CACHE_DURATION:
+        try:
+            _cached_hot_search = get_baidu_hot_search_live("realtime")
+            _cached_time = current_time
+            print(f"刷新百度热搜缓存，共 {_cached_hot_search} 条数据")
+        except Exception as e:
+            print(f"获取百度热搜失败: {e}")
+    
+    return _cached_hot_search
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/auth/login")
 
@@ -414,7 +439,7 @@ async def gitee_callback(code: str = Query(...)):
         
         jwt_token = create_access_token(data={"sub": user["username"], "user_id": user["id"]})
         
-        frontend_url = "http://localhost:3002"
+        frontend_url = FRONTEND_URL
         redirect_url = f"{frontend_url}/login?token={jwt_token}&avatar={avatar_url or ''}"
         
         return RedirectResponse(url=redirect_url)
@@ -601,6 +626,37 @@ def get_hot_search(page: int = 1, page_size: int = 20, category: str = None):
         page_size: 每页数量，默认为20
         category: 分类，可选值：realtime(热搜), movie(电影), sport(体育)
     """
+    if category == 'realtime':
+        try:
+            live_data = get_baidu_hot_search_live("realtime")
+            if live_data and len(live_data) > 0:
+                total = len(live_data)
+                offset = (page - 1) * page_size
+                page_data = live_data[offset:offset + page_size]
+                
+                formatted_data = []
+                for idx, item in enumerate(page_data, start=offset + 1):
+                    formatted_data.append({
+                        "id": item.get("index", idx),
+                        "rank": item.get("index", idx),
+                        "title": item.get("word", ""),
+                        "url": item.get("url", ""),
+                        "image_url": item.get("img", ""),
+                        "hot_index": item.get("hot_score", ""),
+                        "category": "realtime",
+                        "created_at": datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
+                    })
+                
+                return {
+                    "data": formatted_data,
+                    "total": total,
+                    "page": page,
+                    "page_size": page_size,
+                    "total_pages": (total + page_size - 1) // page_size
+                }
+        except Exception as e:
+            print(f"获取百度热搜实时数据失败: {e}")
+    
     conn = get_db_connection()
     if not conn:
         return {"error": "数据库连接失败"}
@@ -608,17 +664,14 @@ def get_hot_search(page: int = 1, page_size: int = 20, category: str = None):
     try:
         cur = conn.cursor()
         
-        # 计算偏移量
         offset = (page - 1) * page_size
         
-        # 查询总数
         if category:
             cur.execute("SELECT COUNT(*) FROM baidu_hot_search WHERE category = %s", (category,))
         else:
             cur.execute("SELECT COUNT(*) FROM baidu_hot_search")
         total = cur.fetchone()[0]
         
-        # 查询分页数据
         if category:
             cur.execute(
                 "SELECT id, rank_num, title, url, created_at, image_url, hot_index, category FROM baidu_hot_search WHERE category = %s ORDER BY rank_num LIMIT %s OFFSET %s",
@@ -634,10 +687,8 @@ def get_hot_search(page: int = 1, page_size: int = 20, category: str = None):
         cur.close()
         conn.close()
         
-        # 格式化数据
         hot_search_data = []
         for row in results:
-            # 确保row包含所有字段
             if len(row) >= 8:
                 hot_search_data.append({
                     "id": row[0],
@@ -650,7 +701,6 @@ def get_hot_search(page: int = 1, page_size: int = 20, category: str = None):
                     "created_at": row[4].isoformat() if isinstance(row[4], datetime) else row[4]
                 })
             else:
-                # 兼容旧数据结构
                 hot_search_data.append({
                     "id": row[0],
                     "rank": row[1],
@@ -662,7 +712,6 @@ def get_hot_search(page: int = 1, page_size: int = 20, category: str = None):
                     "created_at": row[4].isoformat() if isinstance(row[4], datetime) else row[4]
                 })
         
-        # 返回带分页信息的数据
         return {
             "data": hot_search_data,
             "total": total,
@@ -680,39 +729,21 @@ def get_hot_search_by_rank(rank: int):
     """
     根据排名获取百度热搜数据
     """
-    conn = get_db_connection()
-    if not conn:
-        return {"error": "数据库连接失败"}
+    hot_list = get_cached_hot_search()
     
-    try:
-        cur = conn.cursor()
-        cur.execute(
-            "SELECT id, rank_num, title, url, created_at, image_url, hot_index FROM baidu_hot_search WHERE rank_num = %s",
-            (rank,)
-        )
-        
-        result = cur.fetchone()
-        cur.close()
-        conn.close()
-        
-        if not result:
-            return {"error": f"未找到排名为 {rank} 的热搜数据"}
-        
-        # 格式化数据
-        hot_search_item = {
-            "id": result[0],
-            "rank": result[1],
-            "title": result[2],
-            "url": result[3],
-            "image_url": result[5] if len(result) >= 6 else "",
-            "hot_index": result[6] if len(result) >= 7 else "",
-            "created_at": result[4].isoformat() if isinstance(result[4], datetime) else result[4]
+    if rank >= 1 and rank <= len(hot_list):
+        item = hot_list[rank - 1]
+        return {
+            "id": item.get("index", rank),
+            "rank": item.get("index", rank),
+            "title": item.get("word", ""),
+            "url": item.get("url", ""),
+            "image_url": item.get("img", ""),
+            "hot_index": item.get("hot_score", ""),
+            "created_at": datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
         }
-        
-        return hot_search_item
-    except Exception as e:
-        print(f"查询数据错误: {e}")
-        return {"error": "查询数据失败"}
+    
+    return {"error": f"未找到排名为 {rank} 的热搜数据"}
 
 # 健康检查
 @app.get("/health")

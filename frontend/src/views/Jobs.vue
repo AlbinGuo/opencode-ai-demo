@@ -48,9 +48,28 @@
           <h2 class="section-title">🔥 热门外企职位</h2>
         </div>
 
-        <div v-if="isLoading" class="loading-state">
-          <div class="loading-spinner"></div>
-          <p>正在加载职位信息...</p>
+        <div v-if="isLoading" class="skeleton-job-list">
+          <div v-for="n in 5" :key="n" class="skeleton-job-item">
+            <div class="skeleton-job-left">
+              <div class="skeleton-salary"></div>
+              <div class="skeleton-title"></div>
+              <div class="skeleton-tags">
+                <div class="skeleton-tag"></div>
+                <div class="skeleton-tag"></div>
+                <div class="skeleton-tag"></div>
+              </div>
+            </div>
+            <div class="skeleton-job-right">
+              <div class="skeleton-company"></div>
+              <div class="skeleton-info"></div>
+              <div class="skeleton-benefits">
+                <div class="skeleton-benefit"></div>
+                <div class="skeleton-benefit"></div>
+                <div class="skeleton-benefit"></div>
+              </div>
+            </div>
+            <div class="skeleton-logo"></div>
+          </div>
         </div>
 
         <div v-else-if="error" class="error-state">
@@ -546,6 +565,107 @@ export default {
 
 .load-more-btn:disabled {
   opacity: 0.6;
+}
+
+.skeleton-job-list {
+  border-top: 1px solid #eee;
+}
+
+.skeleton-job-item {
+  display: flex;
+  gap: 12px;
+  padding: 16px 0;
+  border-bottom: 1px solid #f5f5f5;
+}
+
+.skeleton-job-left {
+  flex-shrink: 0;
+  width: 100px;
+}
+
+.skeleton-salary {
+  height: 22px;
+  background: #f0f0f0;
+  border-radius: 4px;
+  margin-bottom: 8px;
+  width: 80%;
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+.skeleton-title {
+  height: 20px;
+  background: #f0f0f0;
+  border-radius: 4px;
+  margin-bottom: 8px;
+  width: 100%;
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+.skeleton-tags {
+  display: flex;
+  gap: 6px;
+}
+
+.skeleton-tag {
+  height: 20px;
+  background: #f0f0f0;
+  border-radius: 2px;
+  width: 50px;
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+.skeleton-job-right {
+  flex: 1;
+  min-width: 0;
+}
+
+.skeleton-company {
+  height: 18px;
+  background: #f0f0f0;
+  border-radius: 4px;
+  margin-bottom: 6px;
+  width: 50%;
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+.skeleton-info {
+  height: 16px;
+  background: #f0f0f0;
+  border-radius: 4px;
+  margin-bottom: 8px;
+  width: 70%;
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+.skeleton-benefits {
+  display: flex;
+  gap: 6px;
+}
+
+.skeleton-benefit {
+  height: 22px;
+  background: #e8f5e9;
+  border-radius: 2px;
+  width: 60px;
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+.skeleton-logo {
+  width: 48px;
+  height: 48px;
+  background: #f0f0f0;
+  border-radius: 8px;
+  flex-shrink: 0;
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes skeleton-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
 }
 
 .footer {

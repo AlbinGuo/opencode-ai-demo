@@ -1,22 +1,19 @@
 {
-  "version": 2,
-  "builds": [
+  "buildCommand": "cd frontend && npm run build",
+  "outputDirectory": "frontend/dist",
+  "framework": "vue",
+  "rewrites": [
     {
-      "src": "frontend/package.json",
-      "use": "@vercel/static-build",
-      "config": {
-        "distDir": "frontend/dist"
-      }
-    }
-  ],
-  "routes": [
+      "source": "/api/(.*)",
+      "destination": "/api-proxy/$1"
+    },
     {
-      "src": "/(.*)",
-      "dest": "frontend/dist/$1",
-      "headers": {
-        "Cache-Control": "s-maxage=10, stale-while-revalidate"
-      }
+      "source": "/auth/(.*)",
+      "destination": "/api-proxy/$1"
+    },
+    {
+      "source": "/((?!api|auth).*)",
+      "destination": "/frontend/dist/index.html"
     }
-  ],
-  "outputDirectory": "frontend/dist"
+  ]
 }

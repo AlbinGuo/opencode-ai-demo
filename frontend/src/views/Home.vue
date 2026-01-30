@@ -40,9 +40,15 @@
           <span class="data-count">共 {{ total }} 条</span>
         </div>
 
-        <div v-if="isLoading" class="loading-state">
-          <div class="loading-spinner"></div>
-          <p>加载中...</p>
+        <div v-if="isLoading" class="skeleton-list">
+          <div v-for="n in 10" :key="n" class="skeleton-item">
+            <div class="skeleton-rank"></div>
+            <div class="skeleton-content">
+              <div class="skeleton-title"></div>
+              <div class="skeleton-meta"></div>
+            </div>
+            <div class="skeleton-thumb"></div>
+          </div>
         </div>
 
         <div v-else-if="error" class="error-state">
@@ -526,6 +532,67 @@ export default {
 
 .load-more-btn:disabled {
   opacity: 0.6;
+}
+
+.skeleton-list {
+  border-top: 1px solid #eee;
+}
+
+.skeleton-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 0;
+  border-bottom: 1px solid #f5f5f5;
+}
+
+.skeleton-rank {
+  width: 28px;
+  height: 28px;
+  background: #f0f0f0;
+  border-radius: 4px;
+  flex-shrink: 0;
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+.skeleton-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.skeleton-title {
+  height: 20px;
+  background: #f0f0f0;
+  border-radius: 4px;
+  margin-bottom: 8px;
+  width: 70%;
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+.skeleton-meta {
+  height: 14px;
+  background: #f0f0f0;
+  border-radius: 4px;
+  width: 40%;
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+.skeleton-thumb {
+  width: 60px;
+  height: 60px;
+  background: #f0f0f0;
+  border-radius: 6px;
+  flex-shrink: 0;
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes skeleton-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
 }
 
 .footer {
