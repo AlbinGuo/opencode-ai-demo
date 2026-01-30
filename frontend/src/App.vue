@@ -1,6 +1,5 @@
 <template>
   <div class="app">
-    <!-- 路由视图 -->
     <router-view />
   </div>
 </template>
@@ -12,11 +11,14 @@ export default {
 </script>
 
 <style>
-/* 全局样式 */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
@@ -24,10 +26,43 @@ body {
   font-size: 16px;
   line-height: 1.5;
   color: #333;
-  background-color: #f8f9fa;
+  background-color: #fff;
+  -webkit-font-smoothing: antialiased;
 }
 
 .app {
   min-height: 100vh;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+button {
+  font-family: inherit;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f5f5f5;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #ddd;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #ccc;
 }
 </style>
