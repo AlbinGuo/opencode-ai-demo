@@ -1,7 +1,11 @@
 # 后端API依赖
 fastapi==0.104.1
 uvicorn==0.24.0.post1
-psycopg2-binary==2.9.9
+psycopg2-binary==2.9.11
 python-dotenv==1.0.0
-pydantic==2.5.0
+pydantic==2.10.6
 pydantic-settings==2.1.0
+# 用户认证依赖
+passlib[bcrypt]==1.7.4
+python-jose[cryptography]==3.3.0
+python-multipart==0.0.6
