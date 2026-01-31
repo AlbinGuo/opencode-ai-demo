@@ -3,7 +3,7 @@ import Home from '../views/Home.vue'
 import Jobs from '../views/Jobs.vue'
 import Login from '../views/Login.vue'
 import Register from '../views/Register.vue'
-import { isAuthenticated } from '../api/auth'
+import { isAuthenticated, handleGiteeCallback } from '../api/auth'
 
 const routes = [
   {
@@ -33,6 +33,23 @@ const routes = [
     name: 'Register',
     component: Register,
     meta: { guest: true }
+  },
+  {
+    path: '/auth/gitee/callback',
+    name: 'GiteeCallback',
+    component: {
+      template: '<div class="loading">正在处理Gitee登录...</div>',
+      async mounted() {
+        const token = this.$route.query.token
+        const avatar = this.$route.query.avatar
+        if (token) {
+          handleGiteeCallback(token, avatar)
+          this.$router.push('/')
+        } else {
+          this.$router.push('/login')
+        }
+      }
+    }
   }
 ]
 

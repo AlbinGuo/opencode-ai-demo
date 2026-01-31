@@ -57,7 +57,10 @@
         </div>
 
         <div v-else-if="filteredData.length === 0" class="empty-state">
-          <p>暂无数据</p>
+          <p>{{ emptyMessage }}</p>
+          <button v-if="currentCategory !== 'realtime'" class="retry-btn" @click="fetchHotSearchData">
+            切换到实时热搜
+          </button>
         </div>
 
         <div v-else class="data-list">
@@ -104,6 +107,8 @@
 <script>
 import axios from 'axios'
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8002'
+
 export default {
   name: 'Home',
   data() {
@@ -136,6 +141,12 @@ export default {
     currentCategoryLabel() {
       const category = this.categories.find(cat => cat.value === this.currentCategory)
       return category ? category.label : '热搜'
+    },
+    emptyMessage() {
+      if (this.currentCategory === 'realtime') {
+        return '暂无热搜数据'
+      }
+      return `暂无${this.currentCategoryLabel()}数据，请切换到实时热搜`
     },
     lastUpdateTime() {
       if (this.lastUpdate) {
@@ -180,9 +191,41 @@ export default {
       this.hasMore = true
 
       try {
-        const response = await axios.get('/api/hot-search', {
+        const response = await axios.get(`${API_BASE_URL}/api/hot-search`, {
           params: {
             page: this.page,
+            page_size: this.pageSize,
+            category: this.currentCategory
+          }
+        })
+
+        const data = response.data
+        if (data.error) {
+          this.error = data.error
+          return
+        }
+
+        this.hotSearchData = data.data || []
+        this.total = data.total || this.hotSearchData.length
+        this.hasMore = this.hotSearchData.length >= this.pageSize
+        this.lastUpdate = new Date()
+      } catch (err) {
+        console.error('获取数据失败:', err)
+        this.error = '加载失败，请检查网络'
+      } finally {
+        this.isLoading = false
+        this.isRefreshing = false
+      }
+    },
+    async loadMoreData() {
+      if (this.isLoadingMore || !this.hasMore) return
+      this.isLoadingMore = true
+
+      try {
+        const nextPage = this.page + 1
+        const response = await axios.get(`${API_BASE_URL}/api/hot-search`, {
+          params: {
+            page: nextPage,
             page_size: this.pageSize,
             category: this.currentCategory
           }
