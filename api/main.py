@@ -16,15 +16,15 @@ from gitee_config import (
     GITEE_CLIENT_ID, GITEE_CLIENT_SECRET, GITEE_REDIRECT_URI,
     GITEE_AUTH_URL, GITEE_TOKEN_URL, GITEE_USER_API
 )
+from db_config import get_connection_params, is_production
 import os
 
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
 from baidu_hot_spider import get_baidu_hot_search as get_baidu_hot_search_live
 
-# 缓存实时热搜数据
 _cached_hot_search = []
 _cached_time = 0
-CACHE_DURATION = 300  # 5分钟缓存
+CACHE_DURATION = 300
 
 def get_cached_hot_search():
     """获取缓存的实时热搜数据"""
@@ -51,27 +51,23 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# 配置CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # 在生产环境中应该设置具体的前端域名
+    allow_origins=[
+        "http://localhost:3000",
+        "http://localhost:3006",
+        "https://*.vercel.app",
+        "https://*.railway.app"
+    ] if is_production() else ["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# 数据库连接函数
 def get_db_connection():
-    """
-    连接到PostgreSQL数据库
-    """
+    """连接到PostgreSQL数据库"""
     try:
-        conn = psycopg2.connect(
-            host="localhost",
-            database="demo",
-            user="postgres",
-            password="admin"
-        )
+        conn = psycopg2.connect(**get_connection_params())
         return conn
     except Exception as e:
         print(f"数据库连接错误: {e}")
@@ -617,111 +613,52 @@ def get_job_cities():
 
 # 获取所有热搜数据（支持分页和分类）
 @app.get("/api/hot-search")
-def get_hot_search(page: int = 1, page_size: int = 20, category: str = None):
+def get_hot_search(
+    page: int = Query(1),
+    page_size: int = Query(20),
+    category: str = Query(None)
+):
     """
     获取百度热搜数据（支持分页和分类）
     
     Args:
         page: 页码，默认为1
         page_size: 每页数量，默认为20
-        category: 分类，可选值：realtime(热搜), movie(电影), sport(体育)
+        category: 分类，可选值：realtime(实时), movie(电影), sport(体育), tech(科技), entertainment(娱乐)
     """
-    if category == 'realtime':
-        try:
-            live_data = get_baidu_hot_search_live("realtime")
-            if live_data and len(live_data) > 0:
-                total = len(live_data)
-                offset = (page - 1) * page_size
-                page_data = live_data[offset:offset + page_size]
-                
-                formatted_data = []
-                for idx, item in enumerate(page_data, start=offset + 1):
-                    formatted_data.append({
-                        "id": item.get("index", idx),
-                        "rank": item.get("index", idx),
-                        "title": item.get("word", ""),
-                        "url": item.get("url", ""),
-                        "image_url": item.get("img", ""),
-                        "hot_index": item.get("hot_score", ""),
-                        "category": "realtime",
-                        "created_at": datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
-                    })
-                
-                return {
-                    "data": formatted_data,
-                    "total": total,
-                    "page": page,
-                    "page_size": page_size,
-                    "total_pages": (total + page_size - 1) // page_size
-                }
-        except Exception as e:
-            print(f"获取百度热搜实时数据失败: {e}")
-    
-    conn = get_db_connection()
-    if not conn:
-        return {"error": "数据库连接失败"}
-    
     try:
-        cur = conn.cursor()
+        cat = category or "realtime"
+        live_data = get_baidu_hot_search_live(cat)
         
-        offset = (page - 1) * page_size
-        
-        if category:
-            cur.execute("SELECT COUNT(*) FROM baidu_hot_search WHERE category = %s", (category,))
-        else:
-            cur.execute("SELECT COUNT(*) FROM baidu_hot_search")
-        total = cur.fetchone()[0]
-        
-        if category:
-            cur.execute(
-                "SELECT id, rank_num, title, url, created_at, image_url, hot_index, category FROM baidu_hot_search WHERE category = %s ORDER BY rank_num LIMIT %s OFFSET %s",
-                (category, page_size, offset)
-            )
-        else:
-            cur.execute(
-                "SELECT id, rank_num, title, url, created_at, image_url, hot_index, category FROM baidu_hot_search ORDER BY rank_num LIMIT %s OFFSET %s",
-                (page_size, offset)
-            )
-        
-        results = cur.fetchall()
-        cur.close()
-        conn.close()
-        
-        hot_search_data = []
-        for row in results:
-            if len(row) >= 8:
-                hot_search_data.append({
-                    "id": row[0],
-                    "rank": row[1],
-                    "title": row[2],
-                    "url": row[3],
-                    "image_url": row[5],
-                    "hot_index": row[6],
-                    "category": row[7],
-                    "created_at": row[4].isoformat() if isinstance(row[4], datetime) else row[4]
+        if live_data and len(live_data) > 0:
+            total = len(live_data)
+            offset = (page - 1) * page_size
+            page_data = live_data[offset:offset + page_size]
+            
+            formatted_data = []
+            for idx, item in enumerate(page_data, start=offset + 1):
+                formatted_data.append({
+                    "id": item.get("index", idx),
+                    "rank": item.get("index", idx),
+                    "title": item.get("word", ""),
+                    "url": item.get("url", ""),
+                    "image_url": item.get("img", ""),
+                    "hot_index": item.get("hot_score", ""),
+                    "category": category or "realtime",
+                    "created_at": datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
                 })
-            else:
-                hot_search_data.append({
-                    "id": row[0],
-                    "rank": row[1],
-                    "title": row[2],
-                    "url": row[3],
-                    "image_url": "",
-                    "hot_index": "",
-                    "category": "realtime",
-                    "created_at": row[4].isoformat() if isinstance(row[4], datetime) else row[4]
-                })
-        
-        return {
-            "data": hot_search_data,
-            "total": total,
-            "page": page,
-            "page_size": page_size,
-            "total_pages": (total + page_size - 1) // page_size
-        }
+            
+            return {
+                "data": formatted_data,
+                "total": total,
+                "page": page,
+                "page_size": page_size,
+                "total_pages": (total + page_size - 1) // page_size
+            }
     except Exception as e:
-        print(f"查询数据错误: {e}")
-        return {"error": "查询数据失败"}
+        print(f"获取百度热搜数据失败: {e}")
+    
+    return {"data": [], "total": 0, "page": page, "page_size": page_size, "total_pages": 0}
 
 # 根据排名获取热搜数据
 @app.get("/api/hot-search/{rank}", response_model=Dict[str, Any])
@@ -740,8 +677,35 @@ def get_hot_search_by_rank(rank: int):
             "url": item.get("url", ""),
             "image_url": item.get("img", ""),
             "hot_index": item.get("hot_score", ""),
+            "category": "realtime",
             "created_at": datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
         }
+    
+    conn = get_db_connection()
+    if conn:
+        try:
+            cur = conn.cursor()
+            cur.execute(
+                "SELECT id, rank_num, title, url, created_at, image_url, hot_index, category FROM baidu_hot_search WHERE rank_num = %s ORDER BY created_at DESC LIMIT 1",
+                (rank,)
+            )
+            row = cur.fetchone()
+            cur.close()
+            conn.close()
+            
+            if row:
+                return {
+                    "id": row[0],
+                    "rank": row[1],
+                    "title": row[2],
+                    "url": row[3],
+                    "image_url": row[5] or "",
+                    "hot_index": row[6] or "",
+                    "category": row[7] or "realtime",
+                    "created_at": row[4].isoformat() if hasattr(row[4], 'isoformat') else str(row[4])
+                }
+        except Exception as e:
+            print(f"数据库查询错误: {e}")
     
     return {"error": f"未找到排名为 {rank} 的热搜数据"}
 

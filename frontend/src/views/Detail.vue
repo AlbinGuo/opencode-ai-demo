@@ -94,6 +94,8 @@
 <script>
 import axios from 'axios'
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8002'
+
 export default {
   name: 'Detail',
   data() {
@@ -107,39 +109,39 @@ export default {
     }
   },
   mounted() {
-    const id = this.$route.params.id
-    if (id) {
-      this.fetchDetailData(id)
-    } else {
-      this.error = '参数错误'
-      this.isLoading = false
+    this.fetchDetailData()
+  },
+  watch: {
+    '$route.params.id': function() {
+      this.fetchDetailData()
     }
   },
   methods: {
-    async fetchDetailData(id) {
+    async fetchDetailData() {
       this.isLoading = true
       this.error = null
+      this.detailData = null
+
+      const rank = this.$route.params.id
+      if (!rank) {
+        this.error = '参数错误'
+        this.isLoading = false
+        return
+      }
 
       try {
-        const response = await axios.get('/api/hot-search', {
-          params: { page: 1, page_size: 100 }
-        })
-
-        if (response.data && response.data.data) {
-          const item = response.data.data.find(x => x.id == id)
-          if (item) {
-            this.detailData = item
-            this.fetchContent()
-            this.fetchRelatedItems(id)
-          } else {
-            this.error = '内容不存在'
-          }
+        const response = await axios.get(`${API_BASE_URL}/api/hot-search/${rank}`)
+        
+        if (response.data && !response.data.error) {
+          this.detailData = response.data
+          this.fetchContent()
+          this.fetchRelatedItems(rank)
         } else {
-          this.error = '加载失败'
+          this.error = response.data?.error || '内容不存在'
         }
       } catch (err) {
         console.error('获取详情失败:', err)
-        this.error = '网络错误'
+        this.error = '网络错误，请检查网络连接'
       } finally {
         this.isLoading = false
       }
@@ -158,12 +160,14 @@ export default {
         this.contentLoading = false
       }, 500)
     },
-    fetchRelatedItems(currentId) {
-      axios.get('/api/hot-search', { params: { page: 1, page_size: 10 } })
+    fetchRelatedItems(currentRank) {
+      axios.get(`${API_BASE_URL}/api/hot-search`, { 
+        params: { page: 1, page_size: 10, category: 'realtime' } 
+      })
         .then(res => {
           if (res.data && res.data.data) {
             this.relatedItems = res.data.data
-              .filter(x => x.id != currentId)
+              .filter(x => x.rank != currentRank)
               .slice(0, 5)
           }
         })

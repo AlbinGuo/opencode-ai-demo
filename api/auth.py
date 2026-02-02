@@ -24,6 +24,9 @@ class User(BaseModel):
     username: str
     email: str
     created_at: Optional[datetime] = None
+    gitee_id: Optional[str] = None
+    gitee_username: Optional[str] = None
+    avatar_url: Optional[str] = None
 
 class UserCreate(BaseModel):
     username: str

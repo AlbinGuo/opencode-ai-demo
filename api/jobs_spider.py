@@ -11,6 +11,7 @@ from typing import List, Dict, Optional
 from dataclasses import dataclass
 from datetime import datetime
 from pydantic import BaseModel
+from db_config import get_connection_params
 
 
 class JobBase(BaseModel):
@@ -34,21 +35,19 @@ class JobBase(BaseModel):
     job_detail_url: str = ""
 
 
+JobInfo = JobBase
+
+
 class JobsDB:
     """招聘数据数据库操作类"""
-    
+
     def __init__(self):
         self.conn = None
-    
+
     def get_connection(self):
         """获取数据库连接"""
         try:
-            return psycopg2.connect(
-                host="localhost",
-                database="demo",
-                user="postgres",
-                password="admin"
-            )
+            return psycopg2.connect(**get_connection_params())
         except Exception as e:
             print(f"数据库连接错误: {e}")
             return None
