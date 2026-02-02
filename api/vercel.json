@@ -1,3 +1,18 @@
 {
-  "framework": "fastapi"
+  "framework": "fastapi",
+  "buildCommand": "pip install -r requirements.txt -t .",
+  "devCommand": "python main.py",
+  "installCommand": "pip install -r requirements.txt",
+  "regions": ["iad1"],
+  "functions": {
+    "api/**/*.py": {
+      "runtime": "python3.9"
+    }
+  },
+  "env": {
+    "DATABASE_URL": "@database_url",
+    "GITEE_CLIENT_ID": "@gitee_client_id",
+    "GITEE_CLIENT_SECRET": "@gitee_client_secret",
+    "FRONTEND_URL": "@frontend_url"
+  }
 }
